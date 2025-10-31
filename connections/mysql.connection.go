@@ -27,12 +27,12 @@ func DbMySQL() *sql.DB {
 
 		db, err := sql.Open("mysql", config.FormatDSN())
 		if err != nil {
-			log.Fatalf("Cannot connect to Database.\nError: %s", err.Error())
+			log.Fatalf("[MySQL] Cannot connect to Database.\nError: %s", err.Error())
 		}
 		dbInstance = db
 		pingErr := db.Ping()
 		if pingErr != nil {
-			log.Fatalf("Cannot ping the database. Error: %s", pingErr.Error())
+			log.Fatalf("[MySQL] Cannot ping the database. Error: %s", pingErr.Error())
 		}
 
 		log.Println("[MYSQL] Database connected!")
