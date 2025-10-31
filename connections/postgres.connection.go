@@ -13,7 +13,7 @@ import (
 var dbInstancePostgres *sql.DB
 
 func DbPostgres() *sql.DB {
-	if dbInstance == nil {
+	if dbInstancePostgres == nil {
 		dbConf := configs.GetConfig().DbPostgres
 		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", dbConf.Host, dbConf.Port, dbConf.User, dbConf.Pass, dbConf.Database)
 
