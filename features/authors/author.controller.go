@@ -36,11 +36,11 @@ func (a authorController) CreateAuthorCtrl(w http.ResponseWriter, r *http.Reques
 		fmt.Fprintf(w, `{"message":"Invalid Data"}`)
 		return
 	}
-	err = a.service.createAuthorSrvc(param)
-	if err != nil {
+	isErr, errObj := a.service.createAuthorSrvc(param)
+	if isErr {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"message":"Something Went Wrong. Please contact our administrator!"}`)
+		fmt.Fprintf(w, `{"message":"%s"}`, errObj.MessageToSend)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
