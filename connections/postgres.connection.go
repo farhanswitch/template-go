@@ -22,7 +22,7 @@ func DbPostgres() *sql.DB {
 		if err != nil {
 			log.Fatalf("[Postgres] Cannot connect to Database.\nError: %s", err.Error())
 		}
-		dbInstance = db
+		dbInstancePostgres = db
 		pingErr := db.Ping()
 		if pingErr != nil {
 			log.Fatalf("[Postgres] Cannot ping the database. Error: %s", pingErr.Error())

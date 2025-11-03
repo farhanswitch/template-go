@@ -7,6 +7,7 @@ import (
 
 	"template/configs"
 	"template/connections"
+	featAuthor "template/features/authors"
 
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -43,6 +44,7 @@ func initModules() {
 	connections.ConnectRedis()
 }
 func internalModules(router *chi.Mux) {
+	featAuthor.InitModule(router)
 	// users.InitModule(router)
 	// files.InitModule(router)
 	// markets.InitModule(router)
