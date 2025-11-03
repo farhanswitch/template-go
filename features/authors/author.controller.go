@@ -19,7 +19,7 @@ type authorController struct {
 
 var controller authorController
 
-func (a authorController) CreateAuthorCtrl(w http.ResponseWriter, r *http.Request) {
+func (a authorController) CreateAuthorPostgresCtrl(w http.ResponseWriter, r *http.Request) {
 	var param models.CreateAuthorRequest
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&param)
@@ -39,7 +39,7 @@ func (a authorController) CreateAuthorCtrl(w http.ResponseWriter, r *http.Reques
 		fmt.Fprintf(w, `{"errors":%s}`, strError)
 		return
 	}
-	isErr, errObj := a.service.createAuthorSrvc(param)
+	isErr, errObj := a.service.createAuthorPostgresSrvc(param)
 	if isErr {
 		errObj.Compile()
 		log.Println(errObj)

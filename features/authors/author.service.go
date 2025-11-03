@@ -14,7 +14,7 @@ type authorService struct {
 
 var service authorService
 
-func (s authorService) createAuthorSrvc(param models.CreateAuthorRequest) (bool, errUtility.CustomError) {
+func (s authorService) createAuthorPostgresSrvc(param models.CreateAuthorRequest) (bool, errUtility.CustomError) {
 	uuid, err := utilities.GenerateUUIDv7()
 	if err != nil {
 		return true, errUtility.CustomError{
