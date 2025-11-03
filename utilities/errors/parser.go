@@ -71,6 +71,8 @@ func parseFieldError(err validator.FieldError, errorData map[string][]string) {
 		errorMessage = fmt.Sprintf("Value for field %s must be a valid email.", err.Field())
 	case "max":
 		errorMessage = "Maximum length exceeded."
+	case "min":
+		errorMessage = "Minimum length not reached."
 	case "alphanum":
 		errorMessage = fmt.Sprintf("Value for field %s must be an alphanumeric string.", err.Field())
 	case "hashid":

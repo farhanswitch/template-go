@@ -8,6 +8,7 @@ import (
 
 	"template/models"
 	repoPostgres "template/repositories/postgresql"
+	errUtility "template/utilities/errors"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -33,12 +34,15 @@ func (a authorController) CreateAuthorCtrl(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, `{"message":"Invalid Data"}`)
+		objError := errUtility.ParseError(err)
+		strError, _ := json.Marshal(objError)
+		fmt.Fprintf(w, `{"errors":%s}`, strError)
 		return
 	}
 	isErr, errObj := a.service.createAuthorSrvc(param)
 	if isErr {
-		log.Println(err)
+		errObj.Compile()
+		log.Println(errObj)
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"message":"%s"}`, errObj.MessageToSend)
 		return
