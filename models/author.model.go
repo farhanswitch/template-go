@@ -7,10 +7,12 @@ import (
 )
 
 type Author struct {
-	ID      uuid.UUID `json:"uuid"`
-	Name    string    `json:"name"`
-	Created time.Time `json:"created"`
-	Updated time.Time `json:"updated"`
+	ID         uuid.UUID `json:"uuid"`
+	Name       string    `json:"name"`
+	Created    time.Time `json:"-"`
+	Updated    time.Time `json:"-"`
+	StrCreated string    `json:"created"`
+	StrUpdated string    `json:"updated"`
 }
 
 type CreateAuthorRequest struct {

@@ -10,6 +10,7 @@ import (
 	repoPostgres "template/repositories/postgresql"
 	errUtility "template/utilities/errors"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -19,6 +20,35 @@ type authorController struct {
 
 var controller authorController
 
+func (a authorController) GetAuthorByIDPostgresCtrl(w http.ResponseWriter, r *http.Request) {
+	authorID := chi.URLParam(r, "id")
+	w.Header().Set("Content-Type", "application/json")
+	if authorID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, `{"message":"Invalid Author ID"}`)
+		return
+	}
+	author, errObj := a.service.getAuthorByIDPostgresSrvc(authorID)
+	if errObj.Code != 0 {
+		errObj.Compile()
+		log.Println(errObj)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"message":"%s"}`, errObj.MessageToSend)
+		return
+	}
+	strData, err := json.Marshal(map[string]interface{}{
+		"data":    author,
+		"message": "Success get an author by id",
+	})
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"message":"Internal Server Error"}`)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(strData)
+}
 func (a authorController) CreateAuthorPostgresCtrl(w http.ResponseWriter, r *http.Request) {
 	var param models.CreateAuthorRequest
 	w.Header().Set("Content-Type", "application/json")

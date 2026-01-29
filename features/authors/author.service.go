@@ -25,7 +25,9 @@ func (s authorService) createAuthorPostgresSrvc(param models.CreateAuthorRequest
 	param.UUID = uuid
 	return s.repo.CreateAuthor(param)
 }
-
+func (s authorService) getAuthorByIDPostgresSrvc(authorID string) (models.Author, errUtility.CustomError) {
+	return s.repo.GetAuthorByID(authorID)
+}
 func factoryAuthorService(repo repoPostgres.AuthorPostgresRepo) authorService {
 	if service == (authorService{}) {
 		service = authorService{
