@@ -17,6 +17,14 @@ var repo AuthorPostgresRepo
 func (a AuthorPostgresRepo) CreateAuthor(param models.CreateAuthorRequest) (bool, errUtility.CustomError) {
 	_, err := connections.DbPostgres().Query("INSERT INTO public.authors(id, name) VALUES($1,$2);", param.UUID, param.Name)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+
+			return true, errUtility.CustomError{
+				Code:          http.StatusUnprocessableEntity,
+				Message:       err.Error(),
+				MessageToSend: "Duplicate data",
+			}
+		}
 		return true, errUtility.CustomError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),

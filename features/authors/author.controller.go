@@ -32,7 +32,7 @@ func (a authorController) GetAuthorByIDPostgresCtrl(w http.ResponseWriter, r *ht
 	if errObj.Code != 0 {
 		errObj.Compile()
 		log.Println(errObj)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(int(errObj.Code))
 		fmt.Fprintf(w, `{"message":"%s"}`, errObj.MessageToSend)
 		return
 	}
@@ -73,7 +73,7 @@ func (a authorController) CreateAuthorPostgresCtrl(w http.ResponseWriter, r *htt
 	if isErr {
 		errObj.Compile()
 		log.Println(errObj)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(int(errObj.Code))
 		fmt.Fprintf(w, `{"message":"%s"}`, errObj.MessageToSend)
 		return
 	}
