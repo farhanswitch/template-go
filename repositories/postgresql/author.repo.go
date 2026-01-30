@@ -23,11 +23,13 @@ func (a AuthorPostgresRepo) CreateAuthor(param models.CreateAuthorRequest) (bool
 				Code:          http.StatusUnprocessableEntity,
 				Message:       err.Error(),
 				MessageToSend: "Duplicate data",
+				Function:      "AuthorPostgresRepo.CreateAuthor",
 			}
 		}
 		return true, errUtility.CustomError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
+			Code:     http.StatusInternalServerError,
+			Message:  err.Error(),
+			Function: "AuthorPostgresRepo.CreateAuthor",
 		}
 	}
 	return false, errUtility.CustomError{}
@@ -42,18 +44,21 @@ func (AuthorPostgresRepo) GetAuthorByID(authorID string) (models.Author, errUtil
 				Code:          http.StatusNotFound,
 				Message:       "Author not found",
 				MessageToSend: "Author not found",
+				Function:      "AuthorPostgresRepo.GetAuthorByID",
 			}
 		} else if strings.Contains(err.Error(), "invalid input syntax for type uuid") {
 			return models.Author{}, errUtility.CustomError{
 				Code:          http.StatusNotFound,
 				Message:       "Invalid UUID",
 				MessageToSend: "Author not found",
+				Function:      "AuthorPostgresRepo.GetAuthorByID",
 			}
 		}
 
 		return models.Author{}, errUtility.CustomError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
+			Code:     http.StatusInternalServerError,
+			Message:  err.Error(),
+			Function: "AuthorPostgresRepo.GetAuthorByID",
 		}
 	}
 	author.StrCreated = utility.FormatTimeMillis(author.Created)

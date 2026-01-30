@@ -4,6 +4,7 @@ type CustomError struct {
 	Code          uint
 	Message       string
 	MessageToSend string
+	Function      string
 }
 
 func (e *CustomError) Error() string {
