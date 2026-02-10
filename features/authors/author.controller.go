@@ -35,7 +35,7 @@ func (a authorController) GetAuthorByIDPostgresCtrl(w http.ResponseWriter, r *ht
 		fmt.Fprintf(w, `{"message":"%s"}`, errObj.MessageToSend)
 		return
 	}
-	strData, err := json.Marshal(map[string]interface{}{
+	strData, err := json.Marshal(map[string]any{
 		"data":    author,
 		"message": "Success get an author by id",
 	})

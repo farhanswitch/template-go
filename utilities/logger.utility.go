@@ -40,7 +40,7 @@ func (l LogLevel) String() string {
 }
 
 // Log writes a log message with a specific level and context.
-func Log(level LogLevel, path string, functionName string, payload interface{}, message string, data interface{}) {
+func Log(level LogLevel, path string, functionName string, payload any, message string, data any) {
 	logLevelStr := os.Getenv("LOG_LEVEL")
 	if logLevelStr == "" {
 		logLevelStr = "INFO" // Default log level
@@ -49,7 +49,7 @@ func Log(level LogLevel, path string, functionName string, payload interface{}, 
 	currentLevel := getLogLevelFromString(logLevelStr)
 
 	if level >= currentLevel {
-		logData := map[string]interface{}{
+		logData := map[string]any{
 			"level":    level.String(),
 			"path":     path,
 			"function": functionName,
