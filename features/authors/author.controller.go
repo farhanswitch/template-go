@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"template/models"
 	repoPostgres "template/repositories/postgresql"
 	"template/utilities"
+	custom_errors "template/utilities/errors"
 	errUtility "template/utilities/errors"
 
 	"github.com/go-chi/chi/v5"
@@ -19,6 +21,63 @@ type authorController struct {
 
 var controller authorController
 
+func (a authorController) GetAllAuthorPostgresCtrl(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	query := r.URL.Query()
+	var param models.ParamGetListAuthor
+	search := query.Get("search")
+	param.Search = search
+	limit := query.Get("limit")
+	limitNum, err := strconv.Atoi(limit)
+	if err != nil {
+		limitNum = 10
+	}
+	param.Limit = uint16(limitNum)
+	offset := query.Get("offset")
+	offsetNum, err := strconv.Atoi(offset)
+	if err != nil {
+		offsetNum = 0
+	}
+	param.Offset = uint16(offsetNum)
+	sortField := query.Get("sortField")
+	param.SortField = sortField
+	sortOrder := query.Get("sortOrder")
+	param.SortOrder = sortOrder
+	validator := validator.New()
+	err = validator.Struct(param)
+	if err != nil {
+		utilities.Log(utilities.ERROR, r.URL.Path, "GetAllAuthorPostgresCtrl", nil, err.Error(), nil)
+		w.WriteHeader(http.StatusBadRequest)
+		objError := custom_errors.ParseError(err)
+		strError, _ := json.Marshal(objError)
+		fmt.Fprintf(w, `{"errors": %s}`, strError)
+		return
+	}
+	listAuthor, count, customErr := a.service.getAllAuthorPostgresSrvc(param)
+	if customErr != (errUtility.CustomError{}) {
+		customErr.Compile()
+		utilities.Log(utilities.ERROR, r.URL.Path, "GetAllAuthorPostgresCtrl", param, customErr.Message, nil)
+		w.WriteHeader(int(customErr.Code))
+		fmt.Fprintf(w, `{"errors": "%s"}`, customErr.MessageToSend)
+		return
+	}
+	if listAuthor == nil {
+		listAuthor = []models.Author{}
+	}
+	strRes, err := json.Marshal(map[string]any{
+		"data":    listAuthor,
+		"count":   count,
+		"message": "Success get list author",
+	})
+	if err != nil {
+		utilities.Log(utilities.ERROR, r.URL.Path, "GetAllAuthorPostgresCtrl", nil, err.Error(), nil)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"message":"Internal Server Error"}`)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(strRes)
+}
 func (a authorController) GetAuthorByIDPostgresCtrl(w http.ResponseWriter, r *http.Request) {
 	authorID := chi.URLParam(r, "id")
 	w.Header().Set("Content-Type", "application/json")

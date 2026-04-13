@@ -34,6 +34,40 @@ func (a AuthorPostgresRepo) CreateAuthor(param models.CreateAuthorRequest) (bool
 	}
 	return false, errUtility.CustomError{}
 }
+func (AuthorPostgresRepo) GetListAuthor(param models.ParamGetListAuthor) ([]models.Author, errUtility.CustomError) {
+	var listAuthor []models.Author
+	var nullableUpdatedAt sql.NullTime
+	results, err := connections.DbPostgres().Query("SELECT id, name, created, updated FROM public.get_list_author($1, $2, $3, $4, $5);", param.SortField, param.SortOrder, param.Limit, param.Offset, param.Search)
+	if err != nil {
+		return []models.Author{}, errUtility.CustomError{
+			Code:          http.StatusInternalServerError,
+			Message:       err.Error(),
+			MessageToSend: "Internal Server Error",
+			Function:      "AuthorPostgresRepo.GetListAuthor",
+		}
+	}
+	for results.Next() {
+		var data models.Author
+		err := results.Scan(&data.ID, &data.Name, &data.Created, &nullableUpdatedAt)
+		if err != nil {
+			return []models.Author{}, errUtility.CustomError{
+				Code:          http.StatusInternalServerError,
+				Message:       err.Error(),
+				MessageToSend: "Internal Server Error",
+				Function:      "AuthorPostgresRepo.GetAuthorByID",
+			}
+		}
+		if nullableUpdatedAt.Valid {
+			data.Updated = nullableUpdatedAt.Time
+			data.StrUpdated = utility.FormatTimeMillis(nullableUpdatedAt.Time)
+		} else {
+			data.Updated = data.Created
+			data.StrUpdated = utility.FormatTimeMillis(data.Created)
+		}
+		listAuthor = append(listAuthor, data)
+	}
+	return listAuthor, errUtility.CustomError{}
+}
 func (AuthorPostgresRepo) GetAuthorByID(authorID string) (models.Author, errUtility.CustomError) {
 	var author models.Author
 	var nullableUpdatedAt sql.NullTime
@@ -70,6 +104,19 @@ func (AuthorPostgresRepo) GetAuthorByID(authorID string) (models.Author, errUtil
 		author.StrUpdated = utility.FormatTimeMillis(author.Created)
 	}
 	return author, errUtility.CustomError{}
+}
+func (AuthorPostgresRepo) GetCountAuthor(search string) (int, errUtility.CustomError) {
+	var count int
+	err := connections.DbPostgres().QueryRow("SELECT get_count_author FROM public.get_count_author($1);", search).Scan(&count)
+	if err != nil {
+		return 0, errUtility.CustomError{
+			Code:          http.StatusInternalServerError,
+			Message:       err.Error(),
+			MessageToSend: "Internal Server Error",
+			Function:      "AuthorPostgresRepo.GetCountAuthor",
+		}
+	}
+	return count, errUtility.CustomError{}
 }
 func FactoryAuthorPostgresRepo() AuthorPostgresRepo {
 	if repo == (AuthorPostgresRepo{}) {

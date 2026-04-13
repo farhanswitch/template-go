@@ -11,5 +11,6 @@ func InitModule(router *chi.Mux) {
 	controller := factoryAuthorController(repo)
 
 	router.Post("/api/pg/v1/author", controller.CreateAuthorPostgresCtrl)
+	router.Get("/api/pg/v1/authors", controller.GetAllAuthorPostgresCtrl)
 	router.Get("/api/pg/v1/author/{id}", controller.GetAuthorByIDPostgresCtrl)
 }

@@ -2,6 +2,7 @@ package authors
 
 import (
 	"net/http"
+	"sync"
 	"template/models"
 	repoPostgres "template/repositories/postgresql"
 	"template/utilities"
@@ -24,6 +25,41 @@ func (s authorService) createAuthorPostgresSrvc(param models.CreateAuthorRequest
 	}
 	param.UUID = uuid
 	return s.repo.CreateAuthor(param)
+}
+func (s authorService) getAllAuthorPostgresSrvc(param models.ParamGetListAuthor) ([]models.Author, int, errUtility.CustomError) {
+	var (
+		listAuthor []models.Author
+		count      int
+		errList    errUtility.CustomError
+		errCount   errUtility.CustomError
+		wg         sync.WaitGroup
+	)
+
+	wg.Add(2)
+
+	// goroutine count
+	go func() {
+		defer wg.Done()
+		count, errCount = s.repo.GetCountAuthor(param.Search)
+	}()
+
+	// goroutine list
+	go func() {
+		defer wg.Done()
+		listAuthor, errList = s.repo.GetListAuthor(param)
+	}()
+
+	wg.Wait()
+
+	if errCount.Code != 0 {
+		return nil, 0, errCount
+	}
+
+	if errList.Code != 0 {
+		return nil, 0, errList
+	}
+
+	return listAuthor, count, errUtility.CustomError{}
 }
 func (s authorService) getAuthorByIDPostgresSrvc(authorID string) (models.Author, errUtility.CustomError) {
 	return s.repo.GetAuthorByID(authorID)

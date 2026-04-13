@@ -12,7 +12,7 @@
  Target Server Version : 170006 (170006)
  File Encoding         : 65001
 
- Date: 03/11/2025 15:49:07
+ Date: 13/04/2026 15:54:45
 */
 
 
@@ -34,6 +34,8 @@ ALTER TABLE "public"."authors" OWNER TO "sketch";
 -- ----------------------------
 BEGIN;
 INSERT INTO "public"."authors" ("id", "name", "created", "updated") VALUES ('019a48c6-e7a0-7eb4-89c3-d64000745659', 'J.K. Rowling', '2025-11-03 15:13:06.336672', NULL);
+INSERT INTO "public"."authors" ("id", "name", "created", "updated") VALUES ('019c08d1-c060-7537-9dcf-8d683662f22d', 'Keigo Higashino', '2026-01-29 15:14:49.952378', NULL);
+INSERT INTO "public"."authors" ("id", "name", "created", "updated") VALUES ('019d85c8-294e-727c-b36f-7bdd35908fd2', 'Fyodor Dostoyevsky', '2026-04-13 14:39:40.750748', NULL);
 COMMIT;
 
 -- ----------------------------
@@ -58,10 +60,125 @@ BEGIN;
 COMMIT;
 
 -- ----------------------------
+-- Function structure for _navicat_temp_stored_proc
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."_navicat_temp_stored_proc"("p_sort_field" text, "p_sort_order" text, "p_limit" int4, "p_offset" int4, "p_search" text);
+CREATE OR REPLACE FUNCTION "public"."_navicat_temp_stored_proc"("p_sort_field" text, "p_sort_order" text, "p_limit" int4, "p_offset" int4, "p_search" text)
+  RETURNS SETOF "public"."authors" AS $BODY$
+DECLARE
+    v_query TEXT;
+    v_sort_field TEXT;
+    v_sort_order TEXT;
+BEGIN
+    -- whitelist field
+    IF p_sort_field NOT IN ('id', 'name', 'created_at') THEN
+        v_sort_field := 'id';
+    ELSE
+        v_sort_field := p_sort_field;
+    END IF;
+
+    -- whitelist order
+    IF LOWER(p_sort_order) NOT IN ('asc', 'desc') THEN
+        v_sort_order := 'asc';
+    ELSE
+        v_sort_order := p_sort_order;
+    END IF;
+
+    v_query := format(
+        'SELECT 
+					id, 
+					name
+         FROM public.authors
+         WHERE ($1 IS NULL OR $1 = '''' OR name ILIKE ''%%'' || $1 || ''%%'')
+         ORDER BY %I %s
+         LIMIT $2 OFFSET $3',
+        v_sort_field,
+        v_sort_order
+    );
+
+    RETURN QUERY EXECUTE v_query
+    USING p_search, p_limit, p_offset;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+ALTER FUNCTION "public"."_navicat_temp_stored_proc"("p_sort_field" text, "p_sort_order" text, "p_limit" int4, "p_offset" int4, "p_search" text) OWNER TO "sketch";
+
+-- ----------------------------
+-- Function structure for get_count_author
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_count_author"("p_search" text);
+CREATE OR REPLACE FUNCTION "public"."get_count_author"("p_search" text)
+  RETURNS "pg_catalog"."int8" AS $BODY$
+DECLARE
+    v_count BIGINT;
+BEGIN
+    SELECT COUNT(*)
+    INTO v_count
+    FROM public.authors
+    WHERE (p_search IS NULL OR p_search = '' OR name ILIKE '%' || p_search || '%');
+
+    RETURN v_count;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION "public"."get_count_author"("p_search" text) OWNER TO "sketch";
+
+-- ----------------------------
+-- Function structure for get_list_author
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_list_author"("p_sort_field" text, "p_sort_order" text, "p_limit" int4, "p_offset" int4, "p_search" text);
+CREATE OR REPLACE FUNCTION "public"."get_list_author"("p_sort_field" text, "p_sort_order" text, "p_limit" int4, "p_offset" int4, "p_search" text)
+  RETURNS TABLE("id" uuid, "name" varchar, "created" timestamp, "updated" timestamp) AS $BODY$
+DECLARE
+    v_query TEXT;
+    v_sort_field TEXT;
+    v_sort_order TEXT;
+BEGIN
+    -- whitelist field
+    IF p_sort_field NOT IN ('id', 'name', 'created_at') THEN
+        v_sort_field := 'id';
+    ELSE
+        v_sort_field := p_sort_field;
+    END IF;
+
+    -- whitelist order
+    IF LOWER(p_sort_order) NOT IN ('asc', 'desc') THEN
+        v_sort_order := 'asc';
+    ELSE
+        v_sort_order := p_sort_order;
+    END IF;
+
+    v_query := format(
+        'SELECT 
+            id,
+            name,
+            created,
+						updated
+         FROM public.authors
+         WHERE ($1 IS NULL OR $1 = '''' OR name ILIKE ''%%'' || $1 || ''%%'')
+         ORDER BY %I %s
+         LIMIT $2 OFFSET $3',
+        v_sort_field,
+        v_sort_order
+    );
+
+    RETURN QUERY EXECUTE v_query
+    USING p_search, p_limit, p_offset;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+ALTER FUNCTION "public"."get_list_author"("p_sort_field" text, "p_sort_order" text, "p_limit" int4, "p_offset" int4, "p_search" text) OWNER TO "sketch";
+
+-- ----------------------------
 -- Function structure for update_updated_column
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."update_updated_column"();
-CREATE FUNCTION "public"."update_updated_column"()
+CREATE OR REPLACE FUNCTION "public"."update_updated_column"()
   RETURNS "pg_catalog"."trigger" AS $BODY$
 BEGIN
   NEW.updated = NOW();

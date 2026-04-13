@@ -19,3 +19,11 @@ type CreateAuthorRequest struct {
 	UUID string `json:"uuid"`
 	Name string `json:"name" validate:"required,min=3,max=100"`
 }
+
+type ParamGetListAuthor struct {
+	Limit     uint16 `json:"limit"`
+	Offset    uint16 `json:"offset"`
+	SortField string `json:"sortField" validate:"oneof=id name created"`
+	SortOrder string `json:"sortOrder" validate:"oneof=asc ASC desc DESC"`
+	Search    string `json:"search"`
+}
